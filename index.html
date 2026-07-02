@@ -7,7 +7,6 @@
 <link rel="icon" href="data:,">
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   window.addEventListener("error", function (e) {
@@ -35,144 +34,164 @@
     読み込み中…
   </div>
 </div>
-<script type="text/babel" data-presets="react">
+<script>
 const { useState, useEffect, useRef } = React;
-
-/* ═══════════════════════════════════════════════════════
-   カラーパレット
-═══════════════════════════════════════════════════════ */
 const C = {
-  bg: "#f2f8fa", surface: "#ffffff", surface2: "#eaf4f6",
-  border: "#cfe6ec", borderDark: "#a9d0da",
-  accent: "#3d7d91", accentLight: "#4a95ab", text: "#22343a",
-  muted: "#7fa8b2", disabled: "#dcedf1", disabledText: "#a9c9d1",
-  sun: "#c0522a", sat: "#7c6fae", danger: "#c0522a",
+  bg: "#f2f8fa",
+  surface: "#ffffff",
+  surface2: "#eaf4f6",
+  border: "#cfe6ec",
+  borderDark: "#a9d0da",
+  accent: "#3d7d91",
+  accentLight: "#4a95ab",
+  text: "#22343a",
+  muted: "#7fa8b2",
+  disabled: "#dcedf1",
+  disabledText: "#a9c9d1",
+  sun: "#c0522a",
+  sat: "#7c6fae",
+  danger: "#c0522a"
 };
-
-/* ═══════════════════════════════════════════════════════
-   鳥ロゴ
-═══════════════════════════════════════════════════════ */
 function BirdLogo({ size = 30 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 34 34" fill="none" style={{ flexShrink:0 }}>
-      <circle cx="17" cy="17" r="17" fill={C.accentLight} />
-      <path d="M9 19c0-4.2 3.4-7.6 7.6-7.6 2.5 0 4.2.9 5 2.5l2.5-.8-1.7 2.5c0 4.2-3.4 7.6-7.6 7.6-3.4 0-5.9-1.7-6.7-4.2H6l2.5-1.7.8 1.7z" fill={C.bg} />
-      <circle cx="17.5" cy="14.5" r="0.9" fill={C.accentLight} />
-    </svg>
-  );
+  return /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: "0 0 34 34", fill: "none", style: { flexShrink: 0 } }, /* @__PURE__ */ React.createElement("circle", { cx: "17", cy: "17", r: "17", fill: C.accentLight }), /* @__PURE__ */ React.createElement("path", { d: "M9 19c0-4.2 3.4-7.6 7.6-7.6 2.5 0 4.2.9 5 2.5l2.5-.8-1.7 2.5c0 4.2-3.4 7.6-7.6 7.6-3.4 0-5.9-1.7-6.7-4.2H6l2.5-1.7.8 1.7z", fill: C.bg }), /* @__PURE__ */ React.createElement("circle", { cx: "17.5", cy: "14.5", r: "0.9", fill: C.accentLight }));
 }
-
-/* ═══════════════════════════════════════════════════════
-   アバター表示
-═══════════════════════════════════════════════════════ */
 function Avatar({ url, size = 28, onClick, busy }) {
-  return (
-    <div onClick={busy ? undefined : onClick} style={{ width:size, height:size, borderRadius:"50%", overflow:"hidden",
-      cursor: onClick && !busy ? "pointer" : "default", border:`1.5px solid ${C.border}`, background:C.surface2,
-      display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, opacity: busy ? 0.5 : 1 }}>
-      {url ? <img src={url} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : <span style={{ fontSize:size*0.55 }}>🐦</span>}
-    </div>
-  );
+  return /* @__PURE__ */ React.createElement("div", { onClick: busy ? void 0 : onClick, style: {
+    width: size,
+    height: size,
+    borderRadius: "50%",
+    overflow: "hidden",
+    cursor: onClick && !busy ? "pointer" : "default",
+    border: `1.5px solid ${C.border}`,
+    background: C.surface2,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    opacity: busy ? 0.5 : 1
+  } }, url ? /* @__PURE__ */ React.createElement("img", { src: url, style: { width: "100%", height: "100%", objectFit: "cover" } }) : /* @__PURE__ */ React.createElement("span", { style: { fontSize: size * 0.55 } }, "\u{1F426}"));
 }
-
-/* ═══════════════════════════════════════════════════════
-   ヘルパー関数
-═══════════════════════════════════════════════════════ */
-const HOURS = Array.from({ length: 11 }, (_, i) => i + 20); // 20〜30
+const HOURS = Array.from({ length: 11 }, (_, i) => i + 20);
 const MINUTES = [0, 15, 30, 45];
-
 function calcWorkMinutes(startStr, endStr) {
   if (!startStr || !endStr) return null;
   const [sh, sm] = startStr.split(":").map(Number);
   const [eh, em] = endStr.split(":").map(Number);
-  const mins = (eh * 60 + em) - (sh * 60 + sm);
+  const mins = eh * 60 + em - (sh * 60 + sm);
   return mins > 0 ? mins : null;
 }
-function fmtHour(h) { return h >= 24 ? `${String(h - 24).padStart(2,"0")}(翌)` : String(h).padStart(2,"0"); }
-function fmtTime(str) { if (!str) return ""; const [h,m]=str.split(":").map(Number); return `${fmtHour(h)}:${String(m).padStart(2,"0")}`; }
-function minsToLabel(mins) { if (mins==null) return "--"; const h=Math.floor(mins/60), m=mins%60; return `${h}時間${m>0?m+"分":""}`; }
-function todayStr() { return new Date().toISOString().slice(0,10); }
-function formatDate(dateStr) { const d=new Date(dateStr+"T00:00:00"); const days=["日","月","火","水","木","金","土"]; return `${d.getMonth()+1}/${d.getDate()}（${days[d.getDay()]}）`; }
+function fmtHour(h) {
+  return h >= 24 ? `${String(h - 24).padStart(2, "0")}(\u7FCC)` : String(h).padStart(2, "0");
+}
+function fmtTime(str) {
+  if (!str) return "";
+  const [h, m] = str.split(":").map(Number);
+  return `${fmtHour(h)}:${String(m).padStart(2, "0")}`;
+}
+function minsToLabel(mins) {
+  if (mins == null) return "--";
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return `${h}\u6642\u9593${m > 0 ? m + "\u5206" : ""}`;
+}
+function todayStr() {
+  return (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+}
+function formatDate(dateStr) {
+  const d = /* @__PURE__ */ new Date(dateStr + "T00:00:00");
+  const days = ["\u65E5", "\u6708", "\u706B", "\u6C34", "\u6728", "\u91D1", "\u571F"];
+  return `${d.getMonth() + 1}/${d.getDate()}\uFF08${days[d.getDay()]}\uFF09`;
+}
 const WEEKDAY_COLOR = { 0: C.sun, 6: C.sat };
-
-/* ═══════════════════════════════════════════════════════
-   初期設定画面（Supabase URL / anon key を保存）
-═══════════════════════════════════════════════════════ */
 function SetupScreen({ onSaved }) {
   const [url, setUrl] = useState("");
   const [key, setKey] = useState("");
   const [err, setErr] = useState("");
-
   function handleSave() {
-    if (!url.trim() || !key.trim()) { setErr("両方入力してください"); return; }
+    if (!url.trim() || !key.trim()) {
+      setErr("\u4E21\u65B9\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044");
+      return;
+    }
     if (!url.startsWith("https://") || !url.includes(".supabase.co")) {
-      setErr("URLの形式が正しくないようです（例: https://xxxx.supabase.co）"); return;
+      setErr("URL\u306E\u5F62\u5F0F\u304C\u6B63\u3057\u304F\u306A\u3044\u3088\u3046\u3067\u3059\uFF08\u4F8B: https://xxxx.supabase.co\uFF09");
+      return;
     }
     localStorage.setItem("sb_url", url.trim());
     localStorage.setItem("sb_key", key.trim());
     onSaved(url.trim(), key.trim());
   }
-
-  const inputStyle = { width:"100%", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10,
-    padding:"11px 14px", color:C.text, fontSize:14, outline:"none", boxSizing:"border-box" };
-
-  return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center",
-      fontFamily:"'Hiragino Sans','Meiryo',sans-serif", padding:20 }}>
-      <div style={{ maxWidth:400, width:"100%", background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:28 }}>
-        <div style={{ fontSize:17, fontWeight:800, color:C.accent, marginBottom:6 }}>初期設定</div>
-        <div style={{ fontSize:12, color:C.muted, marginBottom:20, lineHeight:1.6 }}>
-          Supabaseダッシュボードの「Settings → API」から、Project URLとanon publicキーをコピーして貼り付けてください。
-        </div>
-        <div style={{ marginBottom:14 }}>
-          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:5 }}>Project URL</label>
-          <input value={url} onChange={(e)=>setUrl(e.target.value)} placeholder="https://xxxx.supabase.co" style={inputStyle} />
-        </div>
-        <div style={{ marginBottom:16 }}>
-          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:5 }}>anon public キー</label>
-          <input value={key} onChange={(e)=>setKey(e.target.value)} placeholder="eyJhbGciOiJI..." style={inputStyle} />
-        </div>
-        {err && <div style={{ color:C.danger, fontSize:12, marginBottom:12 }}>{err}</div>}
-        <button onClick={handleSave} style={{ width:"100%", background:C.accent, color:"#fff", border:"none",
-          borderRadius:10, padding:"12px 0", fontSize:14, fontWeight:700, cursor:"pointer" }}>
-          保存してはじめる
-        </button>
-      </div>
-    </div>
-  );
+  const inputStyle = {
+    width: "100%",
+    background: C.surface,
+    border: `1px solid ${C.border}`,
+    borderRadius: 10,
+    padding: "11px 14px",
+    color: C.text,
+    fontSize: 14,
+    outline: "none",
+    boxSizing: "border-box"
+  };
+  return /* @__PURE__ */ React.createElement("div", { style: {
+    minHeight: "100vh",
+    background: C.bg,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "'Hiragino Sans','Meiryo',sans-serif",
+    padding: 20
+  } }, /* @__PURE__ */ React.createElement("div", { style: { maxWidth: 400, width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 17, fontWeight: 800, color: C.accent, marginBottom: 6 } }, "\u521D\u671F\u8A2D\u5B9A"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: C.muted, marginBottom: 20, lineHeight: 1.6 } }, "Supabase\u30C0\u30C3\u30B7\u30E5\u30DC\u30FC\u30C9\u306E\u300CSettings \u2192 API\u300D\u304B\u3089\u3001Project URL\u3068anon public\u30AD\u30FC\u3092\u30B3\u30D4\u30FC\u3057\u3066\u8CBC\u308A\u4ED8\u3051\u3066\u304F\u3060\u3055\u3044\u3002"), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 5 } }, "Project URL"), /* @__PURE__ */ React.createElement("input", { value: url, onChange: (e) => setUrl(e.target.value), placeholder: "https://xxxx.supabase.co", style: inputStyle })), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 16 } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 5 } }, "anon public \u30AD\u30FC"), /* @__PURE__ */ React.createElement("input", { value: key, onChange: (e) => setKey(e.target.value), placeholder: "eyJhbGciOiJI...", style: inputStyle })), err && /* @__PURE__ */ React.createElement("div", { style: { color: C.danger, fontSize: 12, marginBottom: 12 } }, err), /* @__PURE__ */ React.createElement("button", { onClick: handleSave, style: {
+    width: "100%",
+    background: C.accent,
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    padding: "12px 0",
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: "pointer"
+  } }, "\u4FDD\u5B58\u3057\u3066\u306F\u3058\u3081\u308B")));
 }
-
-/* ═══════════════════════════════════════════════════════
-   ログイン / 新規登録画面
-═══════════════════════════════════════════════════════ */
 function AuthScreen({ supabase }) {
-  const [mode, setMode] = useState("login"); // "login" | "signup"
+  const [mode, setMode] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
-
-  const inputStyle = { width:"100%", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10,
-    padding:"12px 14px", color:C.text, fontSize:15, outline:"none", boxSizing:"border-box" };
-
+  const inputStyle = {
+    width: "100%",
+    background: C.surface,
+    border: `1px solid ${C.border}`,
+    borderRadius: 10,
+    padding: "12px 14px",
+    color: C.text,
+    fontSize: 15,
+    outline: "none",
+    boxSizing: "border-box"
+  };
   async function handleSubmit() {
-    setErr(""); setMsg("");
-    if (!email.trim() || !password) { setErr("メールとパスワードを入力してください"); return; }
-    if (mode === "signup" && !displayName.trim()) { setErr("表示名を入力してください"); return; }
+    setErr("");
+    setMsg("");
+    if (!email.trim() || !password) {
+      setErr("\u30E1\u30FC\u30EB\u3068\u30D1\u30B9\u30EF\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044");
+      return;
+    }
+    if (mode === "signup" && !displayName.trim()) {
+      setErr("\u8868\u793A\u540D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
-          email: email.trim(), password,
-          options: { data: { display_name: displayName.trim() } },
+          email: email.trim(),
+          password,
+          options: { data: { display_name: displayName.trim() } }
         });
         if (error) throw error;
         if (data.session) {
-          // メール確認が無効化されている場合は即ログイン状態になる
         } else {
-          setMsg("確認メールを送信しました。メール内のリンクを開いてからログインしてください。");
+          setMsg("\u78BA\u8A8D\u30E1\u30FC\u30EB\u3092\u9001\u4FE1\u3057\u307E\u3057\u305F\u3002\u30E1\u30FC\u30EB\u5185\u306E\u30EA\u30F3\u30AF\u3092\u958B\u3044\u3066\u304B\u3089\u30ED\u30B0\u30A4\u30F3\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -180,151 +199,140 @@ function AuthScreen({ supabase }) {
       }
     } catch (e) {
       const m = e.message || "";
-      if (m.includes("Invalid login credentials")) setErr("メールアドレスかパスワードが違います");
-      else if (m.includes("already registered")) setErr("このメールアドレスは既に登録されています");
+      if (m.includes("Invalid login credentials")) setErr("\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u304B\u30D1\u30B9\u30EF\u30FC\u30C9\u304C\u9055\u3044\u307E\u3059");
+      else if (m.includes("already registered")) setErr("\u3053\u306E\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9\u306F\u65E2\u306B\u767B\u9332\u3055\u308C\u3066\u3044\u307E\u3059");
       else setErr(m);
     } finally {
       setLoading(false);
     }
   }
-
-  return (
-    <div style={{ minHeight:"100vh", background:C.bg, display:"flex", alignItems:"center", justifyContent:"center",
-      fontFamily:"'Hiragino Sans','Meiryo',sans-serif", padding:20 }}>
-      <div style={{ maxWidth:380, width:"100%", background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:28 }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:2 }}>
-          <BirdLogo size={30} />
-          <div style={{ fontSize:18, fontWeight:800, color:C.accent }}>勤怠ノート</div>
-        </div>
-        <div style={{ fontSize:12, color:C.muted, marginBottom:22, marginLeft:40 }}>{mode==="login" ? "ログイン" : "新規登録"}</div>
-
-        {mode === "signup" && (
-          <div style={{ marginBottom:14 }}>
-            <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:5 }}>表示名</label>
-            <input value={displayName} onChange={(e)=>setDisplayName(e.target.value)} placeholder="例：田中太郎" style={inputStyle} />
-          </div>
-        )}
-        <div style={{ marginBottom:14 }}>
-          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:5 }}>メールアドレス</label>
-          <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="you@example.com" style={inputStyle} />
-        </div>
-        <div style={{ marginBottom:18 }}>
-          <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:5 }}>パスワード</label>
-          <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)}
-            placeholder="6文字以上" style={inputStyle}
-            onKeyDown={(e)=>e.key==="Enter" && handleSubmit()} />
-        </div>
-
-        {err && <div style={{ color:C.danger, fontSize:12, marginBottom:12, lineHeight:1.5 }}>{err}</div>}
-        {msg && <div style={{ color:C.accent, fontSize:12, marginBottom:12, lineHeight:1.5 }}>{msg}</div>}
-
-        <button onClick={handleSubmit} disabled={loading} style={{ width:"100%", background:C.accent, color:"#fff",
-          border:"none", borderRadius:10, padding:"12px 0", fontSize:14, fontWeight:700,
-          cursor: loading?"default":"pointer", opacity: loading?0.6:1, marginBottom:14 }}>
-          {loading ? "処理中…" : mode==="login" ? "ログイン" : "登録する"}
-        </button>
-
-        <div style={{ textAlign:"center", fontSize:12, color:C.muted }}>
-          {mode==="login" ? (
-            <>アカウントがない場合は{" "}
-              <span onClick={()=>{setMode("signup"); setErr(""); setMsg("");}} style={{ color:C.accent, cursor:"pointer", fontWeight:600 }}>新規登録</span>
-            </>
-          ) : (
-            <>すでにアカウントがある場合は{" "}
-              <span onClick={()=>{setMode("login"); setErr(""); setMsg("");}} style={{ color:C.accent, cursor:"pointer", fontWeight:600 }}>ログイン</span>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  return /* @__PURE__ */ React.createElement("div", { style: {
+    minHeight: "100vh",
+    background: C.bg,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontFamily: "'Hiragino Sans','Meiryo',sans-serif",
+    padding: 20
+  } }, /* @__PURE__ */ React.createElement("div", { style: { maxWidth: 380, width: "100%", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 2 } }, /* @__PURE__ */ React.createElement(BirdLogo, { size: 30 }), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 18, fontWeight: 800, color: C.accent } }, "\u52E4\u6020\u30CE\u30FC\u30C8")), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 12, color: C.muted, marginBottom: 22, marginLeft: 40 } }, mode === "login" ? "\u30ED\u30B0\u30A4\u30F3" : "\u65B0\u898F\u767B\u9332"), mode === "signup" && /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 5 } }, "\u8868\u793A\u540D"), /* @__PURE__ */ React.createElement("input", { value: displayName, onChange: (e) => setDisplayName(e.target.value), placeholder: "\u4F8B\uFF1A\u7530\u4E2D\u592A\u90CE", style: inputStyle })), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 14 } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 5 } }, "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9"), /* @__PURE__ */ React.createElement("input", { type: "email", value: email, onChange: (e) => setEmail(e.target.value), placeholder: "you@example.com", style: inputStyle })), /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 18 } }, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 5 } }, "\u30D1\u30B9\u30EF\u30FC\u30C9"), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "password",
+      value: password,
+      onChange: (e) => setPassword(e.target.value),
+      placeholder: "6\u6587\u5B57\u4EE5\u4E0A",
+      style: inputStyle,
+      onKeyDown: (e) => e.key === "Enter" && handleSubmit()
+    }
+  )), err && /* @__PURE__ */ React.createElement("div", { style: { color: C.danger, fontSize: 12, marginBottom: 12, lineHeight: 1.5 } }, err), msg && /* @__PURE__ */ React.createElement("div", { style: { color: C.accent, fontSize: 12, marginBottom: 12, lineHeight: 1.5 } }, msg), /* @__PURE__ */ React.createElement("button", { onClick: handleSubmit, disabled: loading, style: {
+    width: "100%",
+    background: C.accent,
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    padding: "12px 0",
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: loading ? "default" : "pointer",
+    opacity: loading ? 0.6 : 1,
+    marginBottom: 14
+  } }, loading ? "\u51E6\u7406\u4E2D\u2026" : mode === "login" ? "\u30ED\u30B0\u30A4\u30F3" : "\u767B\u9332\u3059\u308B"), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", fontSize: 12, color: C.muted } }, mode === "login" ? /* @__PURE__ */ React.createElement(React.Fragment, null, "\u30A2\u30AB\u30A6\u30F3\u30C8\u304C\u306A\u3044\u5834\u5408\u306F", " ", /* @__PURE__ */ React.createElement("span", { onClick: () => {
+    setMode("signup");
+    setErr("");
+    setMsg("");
+  }, style: { color: C.accent, cursor: "pointer", fontWeight: 600 } }, "\u65B0\u898F\u767B\u9332")) : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u3059\u3067\u306B\u30A2\u30AB\u30A6\u30F3\u30C8\u304C\u3042\u308B\u5834\u5408\u306F", " ", /* @__PURE__ */ React.createElement("span", { onClick: () => {
+    setMode("login");
+    setErr("");
+    setMsg("");
+  }, style: { color: C.accent, cursor: "pointer", fontWeight: 600 } }, "\u30ED\u30B0\u30A4\u30F3")))));
 }
-
-/* ═══════════════════════════════════════════════════════
-   時刻ピッカー
-═══════════════════════════════════════════════════════ */
 function TimePicker({ label, value, onChange }) {
   const h = value ? parseInt(value.split(":")[0]) : "";
   const m = value ? parseInt(value.split(":")[1]) : "";
-  function setH(newH) { onChange(`${String(newH).padStart(2,"0")}:${String(m!==""?m:0).padStart(2,"0")}`); }
-  function setM(newM) { onChange(`${String(h!==""?h:HOURS[0]).padStart(2,"0")}:${String(newM).padStart(2,"0")}`); }
-  const sel = { background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"11px 10px",
-    fontSize:16, fontFamily:"monospace", fontWeight:700, outline:"none", cursor:"pointer", color:C.text, flex:1, boxSizing:"border-box" };
-  return (
-    <div>
-      <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:6, letterSpacing:"0.08em", textTransform:"uppercase" }}>{label}</label>
-      <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-        <select value={h} onChange={(e)=>setH(Number(e.target.value))} style={sel}>
-          <option value="" disabled>時</option>
-          {HOURS.map((hr)=>(<option key={hr} value={hr}>{fmtHour(hr)}</option>))}
-        </select>
-        <span style={{ fontSize:18, fontWeight:700, color:C.borderDark, flexShrink:0 }}>:</span>
-        <select value={m} onChange={(e)=>setM(Number(e.target.value))} style={sel}>
-          <option value="" disabled>分</option>
-          {MINUTES.map((min)=>(<option key={min} value={min}>{String(min).padStart(2,"0")}</option>))}
-        </select>
-      </div>
-    </div>
-  );
+  function setH(newH) {
+    onChange(`${String(newH).padStart(2, "0")}:${String(m !== "" ? m : 0).padStart(2, "0")}`);
+  }
+  function setM(newM) {
+    onChange(`${String(h !== "" ? h : HOURS[0]).padStart(2, "0")}:${String(newM).padStart(2, "0")}`);
+  }
+  const sel = {
+    background: C.surface,
+    border: `1px solid ${C.border}`,
+    borderRadius: 10,
+    padding: "11px 10px",
+    fontSize: 16,
+    fontFamily: "monospace",
+    fontWeight: 700,
+    outline: "none",
+    cursor: "pointer",
+    color: C.text,
+    flex: 1,
+    boxSizing: "border-box"
+  };
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" } }, label), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, alignItems: "center" } }, /* @__PURE__ */ React.createElement("select", { value: h, onChange: (e) => setH(Number(e.target.value)), style: sel }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "\u6642"), HOURS.map((hr) => /* @__PURE__ */ React.createElement("option", { key: hr, value: hr }, fmtHour(hr)))), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 18, fontWeight: 700, color: C.borderDark, flexShrink: 0 } }, ":"), /* @__PURE__ */ React.createElement("select", { value: m, onChange: (e) => setM(Number(e.target.value)), style: sel }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "\u5206"), MINUTES.map((min) => /* @__PURE__ */ React.createElement("option", { key: min, value: min }, String(min).padStart(2, "0"))))));
 }
-
-/* ═══════════════════════════════════════════════════════
-   写真アップロード（Supabase Storage）
-═══════════════════════════════════════════════════════ */
 function PhotoUploader({ photos, onChange }) {
   const inputRef = useRef(null);
   function handleFiles(e) {
     Array.from(e.target.files).forEach((file) => {
-      onChange((prev) => [...prev, { id: Date.now()+Math.random(), file, url: URL.createObjectURL(file), isNew: true }]);
+      onChange((prev) => [...prev, { id: Date.now() + Math.random(), file, url: URL.createObjectURL(file), isNew: true }]);
     });
     e.target.value = "";
   }
-  return (
-    <div>
-      <label style={{ display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:6, letterSpacing:"0.08em", textTransform:"uppercase" }}>領収書・レシート写真</label>
-      <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
-        {photos.map((p) => (
-          <div key={p.id} style={{ position:"relative", width:72, height:72 }}>
-            <img src={p.url} style={{ width:72, height:72, objectFit:"cover", borderRadius:10, border:`1px solid ${C.border}` }} />
-            <button onClick={()=>onChange((prev)=>prev.filter((x)=>x.id!==p.id))}
-              style={{ position:"absolute", top:-6, right:-6, width:20, height:20, borderRadius:"50%",
-                background:C.danger, border:"none", color:"#fff", fontSize:12, fontWeight:700, cursor:"pointer",
-                display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
-          </div>
-        ))}
-        <button onClick={()=>inputRef.current.click()} style={{ width:72, height:72, borderRadius:10,
-          border:`1.5px dashed ${C.borderDark}`, background:C.surface2, color:C.muted, fontSize:24, cursor:"pointer",
-          display:"flex", alignItems:"center", justifyContent:"center" }}>
-          +
-          <input ref={inputRef} type="file" accept="image/*" multiple style={{ display:"none" }} onChange={handleFiles} />
-        </button>
-      </div>
-      {photos.length>0 && <div style={{ fontSize:11, color:C.muted, marginTop:5 }}>{photos.length}枚添付</div>}
-    </div>
-  );
+  return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" } }, "\u9818\u53CE\u66F8\u30FB\u30EC\u30B7\u30FC\u30C8\u5199\u771F"), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: 10 } }, photos.map((p) => /* @__PURE__ */ React.createElement("div", { key: p.id, style: { position: "relative", width: 72, height: 72 } }, /* @__PURE__ */ React.createElement("img", { src: p.url, style: { width: 72, height: 72, objectFit: "cover", borderRadius: 10, border: `1px solid ${C.border}` } }), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => onChange((prev) => prev.filter((x) => x.id !== p.id)),
+      style: {
+        position: "absolute",
+        top: -6,
+        right: -6,
+        width: 20,
+        height: 20,
+        borderRadius: "50%",
+        background: C.danger,
+        border: "none",
+        color: "#fff",
+        fontSize: 12,
+        fontWeight: 700,
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center"
+      }
+    },
+    "\xD7"
+  ))), /* @__PURE__ */ React.createElement("button", { onClick: () => inputRef.current.click(), style: {
+    width: 72,
+    height: 72,
+    borderRadius: 10,
+    border: `1.5px dashed ${C.borderDark}`,
+    background: C.surface2,
+    color: C.muted,
+    fontSize: 24,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  } }, "+", /* @__PURE__ */ React.createElement("input", { ref: inputRef, type: "file", accept: "image/*", multiple: true, style: { display: "none" }, onChange: handleFiles }))), photos.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: C.muted, marginTop: 5 } }, photos.length, "\u679A\u6DFB\u4ED8"));
 }
-
-/* ═══════════════════════════════════════════════════════
-   メインアプリ（ログイン後）
-═══════════════════════════════════════════════════════ */
 function MainApp({ supabase, session, onLogout }) {
+  var _a, _b;
   const user = session.user;
-  const displayName = user.user_metadata?.display_name || user.email;
-
+  const displayName = ((_a = user.user_metadata) == null ? void 0 : _a.display_name) || user.email;
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ date: todayStr(), start:"", end:"", expense:"", note:"" });
-  const [photos, setPhotos] = useState([]);       // 新規／既存 混在
-  const [removedPhotoIds, setRemovedPhotoIds] = useState([]); // 既存写真の削除予約
+  const [form, setForm] = useState({ date: todayStr(), start: "", end: "", expense: "", note: "" });
+  const [photos, setPhotos] = useState([]);
+  const [removedPhotoIds, setRemovedPhotoIds] = useState([]);
   const [editId, setEditId] = useState(null);
   const [tab, setTab] = useState("kintai");
   const [saved, setSaved] = useState(false);
   const [lightbox, setLightbox] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(user.user_metadata?.avatar_url || null);
+  const [avatarUrl, setAvatarUrl] = useState(((_b = user.user_metadata) == null ? void 0 : _b.avatar_url) || null);
   const [avatarBusy, setAvatarBusy] = useState(false);
   const avatarInputRef = useRef(null);
-
   async function handleAvatarChange(e) {
     const file = e.target.files[0];
     e.target.value = "";
@@ -338,27 +346,23 @@ function MainApp({ supabase, session, onLogout }) {
       const publicUrl = data.publicUrl + "?t=" + Date.now();
       await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
       setAvatarUrl(publicUrl);
-    } catch (e) {
-      alert("アイコンの更新に失敗しました: " + (e.message || e));
+    } catch (e2) {
+      alert("\u30A2\u30A4\u30B3\u30F3\u306E\u66F4\u65B0\u306B\u5931\u6557\u3057\u307E\u3057\u305F: " + (e2.message || e2));
     } finally {
       setAvatarBusy(false);
     }
   }
-
-  useEffect(() => { loadRecords(); }, []);
-
+  useEffect(() => {
+    loadRecords();
+  }, []);
   async function loadRecords() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("records")
-      .select("*, record_photos(*)")
-      .order("date", { ascending: true });
+    const { data, error } = await supabase.from("records").select("*, record_photos(*)").order("date", { ascending: true });
     if (!error && data) {
-      // 写真の署名付きURLを取得
       const withUrls = await Promise.all(data.map(async (r) => {
         const photosWithUrl = await Promise.all((r.record_photos || []).map(async (p) => {
           const { data: signed } = await supabase.storage.from("receipts").createSignedUrl(p.storage_path, 3600);
-          return { ...p, url: signed?.signedUrl };
+          return { ...p, url: signed == null ? void 0 : signed.signedUrl };
         }));
         return { ...r, photos: photosWithUrl };
       }));
@@ -366,25 +370,26 @@ function MainApp({ supabase, session, onLogout }) {
     }
     setLoading(false);
   }
-
   const workMins = calcWorkMinutes(form.start, form.end);
   const canSubmit = form.date && form.start && form.end && workMins !== null && !busy;
-
   async function handleSubmit() {
     if (!canSubmit) return;
     setBusy(true);
     try {
       let recordId = editId;
       const payload = {
-        user_id: user.id, date: form.date, start_time: form.start, end_time: form.end,
-        work_mins: workMins, expense: form.expense ? Number(form.expense) : 0, note: form.note,
+        user_id: user.id,
+        date: form.date,
+        start_time: form.start,
+        end_time: form.end,
+        work_mins: workMins,
+        expense: form.expense ? Number(form.expense) : 0,
+        note: form.note
       };
-
       if (editId) {
         const { error } = await supabase.from("records").update(payload).eq("id", editId);
         if (error) throw error;
       } else {
-        // 同じ日付の既存レコードがあれば上書き、なければ新規
         const existing = records.find((r) => r.date === form.date);
         if (existing) {
           recordId = existing.id;
@@ -396,201 +401,152 @@ function MainApp({ supabase, session, onLogout }) {
           recordId = data.id;
         }
       }
-
-      // 削除予約の既存写真を消す
       for (const p of removedPhotoIds) {
         await supabase.storage.from("receipts").remove([p.storage_path]);
         await supabase.from("record_photos").delete().eq("id", p.id);
       }
-
-      // 新規写真をアップロード
       for (const p of photos.filter((x) => x.isNew)) {
         const path = `${user.id}/${recordId}/${Date.now()}_${p.file.name}`;
         const { error: upErr } = await supabase.storage.from("receipts").upload(path, p.file);
         if (upErr) throw upErr;
         await supabase.from("record_photos").insert({ record_id: recordId, user_id: user.id, storage_path: path });
       }
-
       await loadRecords();
-      setForm({ date: todayStr(), start:"", end:"", expense:"", note:"" });
-      setPhotos([]); setRemovedPhotoIds([]); setEditId(null);
-      setSaved(true); setTimeout(()=>setSaved(false), 2000);
+      setForm({ date: todayStr(), start: "", end: "", expense: "", note: "" });
+      setPhotos([]);
+      setRemovedPhotoIds([]);
+      setEditId(null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2e3);
       setTab("history");
     } catch (e) {
-      alert("保存に失敗しました: " + (e.message || e));
+      alert("\u4FDD\u5B58\u306B\u5931\u6557\u3057\u307E\u3057\u305F: " + (e.message || e));
     } finally {
       setBusy(false);
     }
   }
-
   function handleEdit(r) {
-    setForm({ date:r.date, start:r.start_time, end:r.end_time, expense:r.expense?String(r.expense):"", note:r.note||"" });
-    setPhotos((r.photos||[]).map((p)=>({ id:p.id, url:p.url, storage_path:p.storage_path, isNew:false })));
+    setForm({ date: r.date, start: r.start_time, end: r.end_time, expense: r.expense ? String(r.expense) : "", note: r.note || "" });
+    setPhotos((r.photos || []).map((p) => ({ id: p.id, url: p.url, storage_path: p.storage_path, isNew: false })));
     setRemovedPhotoIds([]);
     setEditId(r.id);
     setTab("kintai");
   }
-
   async function handleDelete(r) {
-    if (!confirm("この記録を削除しますか？")) return;
-    for (const p of (r.photos||[])) {
+    if (!confirm("\u3053\u306E\u8A18\u9332\u3092\u524A\u9664\u3057\u307E\u3059\u304B\uFF1F")) return;
+    for (const p of r.photos || []) {
       await supabase.storage.from("receipts").remove([p.storage_path]);
     }
     await supabase.from("records").delete().eq("id", r.id);
     await loadRecords();
   }
-
   function onPhotosChange(updater) {
     setPhotos((prev) => {
       const next = typeof updater === "function" ? updater(prev) : updater;
-      // 既存写真が消された場合は削除予約に積む
       const removed = prev.filter((p) => !p.isNew && !next.find((n) => n.id === p.id));
       if (removed.length) setRemovedPhotoIds((r) => [...r, ...removed]);
       return next;
     });
   }
-
-  // 月ごとにグルーピング
   const months = {};
   records.forEach((r) => {
-    const mk = r.date.slice(0,7);
-    if (!months[mk]) months[mk] = { totalMins:0, totalExpense:0, count:0, records:[] };
+    const mk = r.date.slice(0, 7);
+    if (!months[mk]) months[mk] = { totalMins: 0, totalExpense: 0, count: 0, records: [] };
     months[mk].totalMins += r.work_mins || 0;
     months[mk].totalExpense += r.expense || 0;
     months[mk].count++;
     months[mk].records.push(r);
   });
   const monthKeys = Object.keys(months).sort().reverse();
-
-  const labelStyle = { display:"block", fontSize:11, fontWeight:600, color:C.muted, marginBottom:6, letterSpacing:"0.08em", textTransform:"uppercase" };
-  const inputStyle = { width:"100%", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10,
-    padding:"11px 14px", color:C.text, fontSize:15, outline:"none", boxSizing:"border-box", fontFamily:"inherit" };
-
-  return (
-    <div style={{ minHeight:"100vh", background:C.bg, fontFamily:"'Hiragino Sans','Meiryo',sans-serif", color:C.text }}>
-      {lightbox && (
-        <div onClick={()=>setLightbox(null)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.6)", zIndex:100,
-          display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <img src={lightbox} style={{ maxWidth:"90vw", maxHeight:"90vh", borderRadius:12, objectFit:"contain" }} />
-        </div>
-      )}
-
-      <header style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 20px" }}>
-        <div style={{ maxWidth:680, margin:"0 auto", display:"flex", alignItems:"center", justifyContent:"space-between", height:54 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <BirdLogo size={26} />
-            <span style={{ fontSize:16, fontWeight:700, color:C.accent, letterSpacing:"0.04em" }}>勤怠ノート</span>
-          </div>
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ display:"flex", gap:2, background:C.surface2, borderRadius:10, padding:"3px" }}>
-              {[["kintai","勤怠"],["history","履歴"]].map(([t,label]) => (
-                <button key={t} onClick={()=>setTab(t)} style={{ padding:"5px 18px", borderRadius:8, border:"none", cursor:"pointer",
-                  fontSize:13, fontWeight:600, background: tab===t ? C.surface : "transparent", color: tab===t ? C.accent : C.muted,
-                  boxShadow: tab===t ? "0 1px 4px rgba(0,0,0,0.08)" : "none", transition:"all 0.15s" }}>{label}</button>
-              ))}
-            </div>
-            <Avatar url={avatarUrl} size={26} busy={avatarBusy} onClick={()=>avatarInputRef.current.click()} />
-            <input ref={avatarInputRef} type="file" accept="image/*" style={{ display:"none" }} onChange={handleAvatarChange} />
-            <span style={{ fontSize:11, color:C.muted, maxWidth:70, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }} title={displayName}>{displayName}</span>
-            <button onClick={onLogout} title="ログアウト" style={{ background:"none", border:"none", color:C.muted, cursor:"pointer", fontSize:12, padding:0 }}>⏻</button>
-          </div>
-        </div>
-      </header>
-
-      <main style={{ maxWidth:680, margin:"0 auto", padding:"24px 16px" }}>
-
-        {tab === "kintai" && (
-          <div>
-            <div style={{ marginBottom:20, display:"flex", alignItems:"center", gap:8 }}>
-              <h2 style={{ fontSize:14, fontWeight:700, color:C.muted, margin:0, letterSpacing:"0.04em" }}>{editId ? "編集中" : "勤怠を入力"}</h2>
-              {editId && (
-                <button onClick={()=>{ setEditId(null); setForm({date:todayStr(),start:"",end:"",expense:"",note:""}); setPhotos([]); setRemovedPhotoIds([]); }}
-                  style={{ fontSize:12, color:C.muted, background:"none", border:"none", cursor:"pointer", textDecoration:"underline" }}>キャンセル</button>
-              )}
-            </div>
-            <div style={{ display:"flex", flexDirection:"column", gap:18 }}>
-              <div>
-                <label style={labelStyle}>日付</label>
-                <input type="date" value={form.date} onChange={(e)=>setForm({...form,date:e.target.value})} style={inputStyle} />
-              </div>
-              <TimePicker label="出勤時刻" value={form.start} onChange={(v)=>setForm({...form,start:v})} />
-              <TimePicker label="退勤時刻" value={form.end} onChange={(v)=>setForm({...form,end:v})} />
-              {workMins!==null && (
-                <div style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:12, padding:"14px 18px", display:"flex", alignItems:"center", gap:14 }}>
-                  <span style={{ fontSize:28, fontWeight:800, fontFamily:"monospace", color:C.accent }}>{String(Math.floor(workMins/60)).padStart(2,"0")}:{String(workMins%60).padStart(2,"0")}</span>
-                  <div>
-                    <div style={{ fontSize:11, color:C.muted }}>実働時間</div>
-                    <div style={{ fontSize:13, color:C.accentLight, fontWeight:600 }}>{minsToLabel(workMins)}</div>
-                  </div>
-                </div>
-              )}
-              <div>
-                <label style={labelStyle}>立替金（円）</label>
-                <div style={{ position:"relative" }}>
-                  <span style={{ position:"absolute", left:13, top:"50%", transform:"translateY(-50%)", color:C.muted, fontSize:14, pointerEvents:"none" }}>¥</span>
-                  <input type="number" value={form.expense} onChange={(e)=>setForm({...form,expense:e.target.value})} placeholder="0" min="0" style={{...inputStyle, paddingLeft:28}} />
-                </div>
-              </div>
-              {(Number(form.expense)>0 || photos.length>0) && <PhotoUploader photos={photos} onChange={onPhotosChange} />}
-              <div>
-                <label style={labelStyle}>備考</label>
-                <textarea value={form.note} onChange={(e)=>setForm({...form,note:e.target.value})} placeholder="メモ・特記事項など" rows={3} style={{...inputStyle, resize:"vertical", lineHeight:1.6}} />
-              </div>
-              <button onClick={handleSubmit} disabled={!canSubmit} style={{ background: canSubmit?C.accent:C.disabled, color: canSubmit?"#fff":C.disabledText,
-                border:"none", borderRadius:12, padding:"13px 0", fontSize:15, fontWeight:700, cursor: canSubmit?"pointer":"not-allowed", width:"100%", transition:"all 0.15s" }}>
-                {busy ? "保存中…" : editId ? "更新する" : "保存する"}
-              </button>
-              {saved && <div style={{ textAlign:"center", color:C.accentLight, fontSize:13, fontWeight:600 }}>✓ 保存しました</div>}
-            </div>
-          </div>
-        )}
-
-        {tab === "history" && (
-          <div>
-            {loading ? (
-              <div style={{ textAlign:"center", color:C.muted, marginTop:60, fontSize:13 }}>読み込み中…</div>
-            ) : monthKeys.length === 0 ? (
-              <div style={{ textAlign:"center", color:C.muted, marginTop:60 }}>
-                <div style={{ fontSize:36, marginBottom:12 }}>📋</div>
-                <div style={{ fontSize:14 }}>記録がまだありません</div>
-                <button onClick={()=>setTab("kintai")} style={{ marginTop:16, background:C.accent, color:"#fff", border:"none", borderRadius:10, padding:"8px 20px", cursor:"pointer", fontWeight:600 }}>入力する</button>
-              </div>
-            ) : monthKeys.map((mk) => {
-              const mg = months[mk];
-              const [y, mo] = mk.split("-");
-
-              function buildShareText() {
-                const lines = [`【${y}年${mo}月 勤怠報告】`, ""];
-                mg.records.forEach((r) => {
-                  let line = `${formatDate(r.date)}  ${fmtTime(r.start_time)}〜${fmtTime(r.end_time)}  (${minsToLabel(r.work_mins)})`;
-                  if (r.note) line += `  📝${r.note}`;
-                  lines.push(line);
-                });
-                lines.push("");
-                lines.push("──────────");
-                lines.push(`出勤日数：${mg.count}日`);
-                lines.push(`合計勤務：${minsToLabel(mg.totalMins)}`);
-                if (mg.totalExpense > 0) lines.push(`立替合計：¥${mg.totalExpense.toLocaleString()}`);
-                return lines.join("\n");
-              }
-
-              function handlePdf() {
-                const rows = mg.records.map((r) => {
-                  const dow = new Date(r.date+"T00:00:00").getDay();
-                  const dcol = dow===0?"#c0522a":dow===6?"#7c6fae":"#22343a";
-                  return `<tr><td style="color:${dcol};font-weight:700;white-space:nowrap;">${formatDate(r.date)}</td>
-                    <td style="font-family:monospace;">${fmtTime(r.start_time)} 〜 ${fmtTime(r.end_time)}</td>
+  const labelStyle = { display: "block", fontSize: 11, fontWeight: 600, color: C.muted, marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" };
+  const inputStyle = {
+    width: "100%",
+    background: C.surface,
+    border: `1px solid ${C.border}`,
+    borderRadius: 10,
+    padding: "11px 14px",
+    color: C.text,
+    fontSize: 15,
+    outline: "none",
+    boxSizing: "border-box",
+    fontFamily: "inherit"
+  };
+  return /* @__PURE__ */ React.createElement("div", { style: { minHeight: "100vh", background: C.bg, fontFamily: "'Hiragino Sans','Meiryo',sans-serif", color: C.text } }, lightbox && /* @__PURE__ */ React.createElement("div", { onClick: () => setLightbox(null), style: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.6)",
+    zIndex: 100,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  } }, /* @__PURE__ */ React.createElement("img", { src: lightbox, style: { maxWidth: "90vw", maxHeight: "90vh", borderRadius: 12, objectFit: "contain" } })), /* @__PURE__ */ React.createElement("header", { style: { background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "0 20px" } }, /* @__PURE__ */ React.createElement("div", { style: { maxWidth: 680, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 54 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement(BirdLogo, { size: 26 }), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 16, fontWeight: 700, color: C.accent, letterSpacing: "0.04em" } }, "\u52E4\u6020\u30CE\u30FC\u30C8")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 2, background: C.surface2, borderRadius: 10, padding: "3px" } }, [["kintai", "\u52E4\u6020"], ["history", "\u5C65\u6B74"]].map(([t, label]) => /* @__PURE__ */ React.createElement("button", { key: t, onClick: () => setTab(t), style: {
+    padding: "5px 18px",
+    borderRadius: 8,
+    border: "none",
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 600,
+    background: tab === t ? C.surface : "transparent",
+    color: tab === t ? C.accent : C.muted,
+    boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+    transition: "all 0.15s"
+  } }, label))), /* @__PURE__ */ React.createElement(Avatar, { url: avatarUrl, size: 26, busy: avatarBusy, onClick: () => avatarInputRef.current.click() }), /* @__PURE__ */ React.createElement("input", { ref: avatarInputRef, type: "file", accept: "image/*", style: { display: "none" }, onChange: handleAvatarChange }), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: C.muted, maxWidth: 70, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, title: displayName }, displayName), /* @__PURE__ */ React.createElement("button", { onClick: onLogout, title: "\u30ED\u30B0\u30A2\u30A6\u30C8", style: { background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 12, padding: 0 } }, "\u23FB")))), /* @__PURE__ */ React.createElement("main", { style: { maxWidth: 680, margin: "0 auto", padding: "24px 16px" } }, tab === "kintai" && /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { marginBottom: 20, display: "flex", alignItems: "center", gap: 8 } }, /* @__PURE__ */ React.createElement("h2", { style: { fontSize: 14, fontWeight: 700, color: C.muted, margin: 0, letterSpacing: "0.04em" } }, editId ? "\u7DE8\u96C6\u4E2D" : "\u52E4\u6020\u3092\u5165\u529B"), editId && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        setEditId(null);
+        setForm({ date: todayStr(), start: "", end: "", expense: "", note: "" });
+        setPhotos([]);
+        setRemovedPhotoIds([]);
+      },
+      style: { fontSize: 12, color: C.muted, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }
+    },
+    "\u30AD\u30E3\u30F3\u30BB\u30EB"
+  )), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 18 } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "\u65E5\u4ED8"), /* @__PURE__ */ React.createElement("input", { type: "date", value: form.date, onChange: (e) => setForm({ ...form, date: e.target.value }), style: inputStyle })), /* @__PURE__ */ React.createElement(TimePicker, { label: "\u51FA\u52E4\u6642\u523B", value: form.start, onChange: (v) => setForm({ ...form, start: v }) }), /* @__PURE__ */ React.createElement(TimePicker, { label: "\u9000\u52E4\u6642\u523B", value: form.end, onChange: (v) => setForm({ ...form, end: v }) }), workMins !== null && /* @__PURE__ */ React.createElement("div", { style: { background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 28, fontWeight: 800, fontFamily: "monospace", color: C.accent } }, String(Math.floor(workMins / 60)).padStart(2, "0"), ":", String(workMins % 60).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: C.muted } }, "\u5B9F\u50CD\u6642\u9593"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 13, color: C.accentLight, fontWeight: 600 } }, minsToLabel(workMins)))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "\u7ACB\u66FF\u91D1\uFF08\u5186\uFF09"), /* @__PURE__ */ React.createElement("div", { style: { position: "relative" } }, /* @__PURE__ */ React.createElement("span", { style: { position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", color: C.muted, fontSize: 14, pointerEvents: "none" } }, "\xA5"), /* @__PURE__ */ React.createElement("input", { type: "number", value: form.expense, onChange: (e) => setForm({ ...form, expense: e.target.value }), placeholder: "0", min: "0", style: { ...inputStyle, paddingLeft: 28 } }))), (Number(form.expense) > 0 || photos.length > 0) && /* @__PURE__ */ React.createElement(PhotoUploader, { photos, onChange: onPhotosChange }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { style: labelStyle }, "\u5099\u8003"), /* @__PURE__ */ React.createElement("textarea", { value: form.note, onChange: (e) => setForm({ ...form, note: e.target.value }), placeholder: "\u30E1\u30E2\u30FB\u7279\u8A18\u4E8B\u9805\u306A\u3069", rows: 3, style: { ...inputStyle, resize: "vertical", lineHeight: 1.6 } })), /* @__PURE__ */ React.createElement("button", { onClick: handleSubmit, disabled: !canSubmit, style: {
+    background: canSubmit ? C.accent : C.disabled,
+    color: canSubmit ? "#fff" : C.disabledText,
+    border: "none",
+    borderRadius: 12,
+    padding: "13px 0",
+    fontSize: 15,
+    fontWeight: 700,
+    cursor: canSubmit ? "pointer" : "not-allowed",
+    width: "100%",
+    transition: "all 0.15s"
+  } }, busy ? "\u4FDD\u5B58\u4E2D\u2026" : editId ? "\u66F4\u65B0\u3059\u308B" : "\u4FDD\u5B58\u3059\u308B"), saved && /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", color: C.accentLight, fontSize: 13, fontWeight: 600 } }, "\u2713 \u4FDD\u5B58\u3057\u307E\u3057\u305F"))), tab === "history" && /* @__PURE__ */ React.createElement("div", null, loading ? /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", color: C.muted, marginTop: 60, fontSize: 13 } }, "\u8AAD\u307F\u8FBC\u307F\u4E2D\u2026") : monthKeys.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", color: C.muted, marginTop: 60 } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 36, marginBottom: 12 } }, "\u{1F4CB}"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 14 } }, "\u8A18\u9332\u304C\u307E\u3060\u3042\u308A\u307E\u305B\u3093"), /* @__PURE__ */ React.createElement("button", { onClick: () => setTab("kintai"), style: { marginTop: 16, background: C.accent, color: "#fff", border: "none", borderRadius: 10, padding: "8px 20px", cursor: "pointer", fontWeight: 600 } }, "\u5165\u529B\u3059\u308B")) : monthKeys.map((mk) => {
+    const mg = months[mk];
+    const [y, mo] = mk.split("-");
+    function buildShareText() {
+      const lines = [`\u3010${y}\u5E74${mo}\u6708 \u52E4\u6020\u5831\u544A\u3011`, ""];
+      mg.records.forEach((r) => {
+        let line = `${formatDate(r.date)}  ${fmtTime(r.start_time)}\u301C${fmtTime(r.end_time)}  (${minsToLabel(r.work_mins)})`;
+        if (r.note) line += `  \u{1F4DD}${r.note}`;
+        lines.push(line);
+      });
+      lines.push("");
+      lines.push("\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500");
+      lines.push(`\u51FA\u52E4\u65E5\u6570\uFF1A${mg.count}\u65E5`);
+      lines.push(`\u5408\u8A08\u52E4\u52D9\uFF1A${minsToLabel(mg.totalMins)}`);
+      if (mg.totalExpense > 0) lines.push(`\u7ACB\u66FF\u5408\u8A08\uFF1A\xA5${mg.totalExpense.toLocaleString()}`);
+      return lines.join("\n");
+    }
+    function handlePdf() {
+      const rows = mg.records.map((r) => {
+        const dow = (/* @__PURE__ */ new Date(r.date + "T00:00:00")).getDay();
+        const dcol = dow === 0 ? "#c0522a" : dow === 6 ? "#7c6fae" : "#22343a";
+        return `<tr><td style="color:${dcol};font-weight:700;white-space:nowrap;">${formatDate(r.date)}</td>
+                    <td style="font-family:monospace;">${fmtTime(r.start_time)} \u301C ${fmtTime(r.end_time)}</td>
                     <td style="font-family:monospace;font-weight:700;">${minsToLabel(r.work_mins)}</td>
-                    <td style="color:#3d7d91;">${r.expense>0?"¥"+r.expense.toLocaleString():""}</td>
-                    <td style="color:#5c7d87;font-size:12px;">${r.note?String(r.note).replace(/</g,"&lt;"):""}</td></tr>`;
-                }).join("");
-                const totalH = `${String(Math.floor(mg.totalMins/60)).padStart(2,"0")}:${String(mg.totalMins%60).padStart(2,"0")}`;
-                const footerSummary = `<div class="summary" style="margin-top:16px;margin-bottom:0;">
-                  <div><span class="lbl">出勤日数 合計</span><span class="val">${mg.count}日</span></div>
-                  <div><span class="lbl">勤務時間 合計</span><span class="val">${totalH}</span></div>
-                  ${mg.totalExpense>0?`<div><span class="lbl">立替金 合計</span><span class="val">¥${mg.totalExpense.toLocaleString()}</span></div>`:""}
+                    <td style="color:#3d7d91;">${r.expense > 0 ? "\xA5" + r.expense.toLocaleString() : ""}</td>
+                    <td style="color:#5c7d87;font-size:12px;">${r.note ? String(r.note).replace(/</g, "&lt;") : ""}</td></tr>`;
+      }).join("");
+      const totalH = `${String(Math.floor(mg.totalMins / 60)).padStart(2, "0")}:${String(mg.totalMins % 60).padStart(2, "0")}`;
+      const footerSummary = `<div class="summary" style="margin-top:16px;margin-bottom:0;">
+                  <div><span class="lbl">\u51FA\u52E4\u65E5\u6570 \u5408\u8A08</span><span class="val">${mg.count}\u65E5</span></div>
+                  <div><span class="lbl">\u52E4\u52D9\u6642\u9593 \u5408\u8A08</span><span class="val">${totalH}</span></div>
+                  ${mg.totalExpense > 0 ? `<div><span class="lbl">\u7ACB\u66FF\u91D1 \u5408\u8A08</span><span class="val">\xA5${mg.totalExpense.toLocaleString()}</span></div>` : ""}
                   </div>`;
-                const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${y}年${mo}月 勤怠</title><style>
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${y}\u5E74${mo}\u6708 \u52E4\u6020</title><style>
                   *{margin:0;padding:0;box-sizing:border-box}body{font-family:'Hiragino Sans','Meiryo',sans-serif;color:#22343a;padding:32px}
                   h1{font-size:22px;margin-bottom:4px}.sub{color:#7fa8b2;font-size:13px;margin-bottom:20px}
                   .hint{background:#eaf4f6;border:1px solid #cfe6ec;color:#3d7d91;font-size:12px;padding:10px 14px;border-radius:8px;margin-bottom:20px}
@@ -598,142 +554,145 @@ function MainApp({ supabase, session, onLogout }) {
                   .summary .lbl{display:block;font-size:11px;color:#7fa8b2;margin-bottom:3px}.summary .val{display:block;font-size:20px;font-weight:800;color:#3d7d91;font-family:monospace}
                   table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:#7fa8b2;font-size:11px;font-weight:600;padding:8px 10px;border-bottom:2px solid #cfe6ec}
                   td{padding:9px 10px;border-bottom:1px solid #e3f0f3}@media print{.hint{display:none}body{padding:16px}}
-                  </style></head><body><div class="hint">📄 共有メニューまたはCtrl/Cmd+Pで「PDFに保存」を選んでください</div>
-                  <h1>${y}年 ${mo}月 勤怠記録</h1><div class="sub">出力日：${new Date().toLocaleDateString("ja-JP")}</div>
-                  <table><thead><tr><th>日付</th><th>時間</th><th>勤務</th><th>立替</th><th>備考</th></tr></thead><tbody>${rows}</tbody></table>
+                  </style></head><body><div class="hint">\u{1F4C4} \u5171\u6709\u30E1\u30CB\u30E5\u30FC\u307E\u305F\u306FCtrl/Cmd+P\u3067\u300CPDF\u306B\u4FDD\u5B58\u300D\u3092\u9078\u3093\u3067\u304F\u3060\u3055\u3044</div>
+                  <h1>${y}\u5E74 ${mo}\u6708 \u52E4\u6020\u8A18\u9332</h1><div class="sub">\u51FA\u529B\u65E5\uFF1A${(/* @__PURE__ */ new Date()).toLocaleDateString("ja-JP")}</div>
+                  <table><thead><tr><th>\u65E5\u4ED8</th><th>\u6642\u9593</th><th>\u52E4\u52D9</th><th>\u7ACB\u66FF</th><th>\u5099\u8003</th></tr></thead><tbody>${rows}</tbody></table>
                   ${footerSummary}
                   </body></html>`;
-                const blob = new Blob([html], { type:"text/html" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener";
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(()=>URL.revokeObjectURL(url), 30000);
-              }
-
-              function handleCsv() {
-                const header = ["日付","曜日","出勤","退勤","勤務時間(分)","勤務時間","立替金","備考"];
-                const csvRows = [header.join(",")];
-                const esc = (v) => `"${String(v??"").replace(/"/g,'""')}"`;
-                mg.records.forEach((r) => {
-                  const d = new Date(r.date+"T00:00:00"); const days=["日","月","火","水","木","金","土"];
-                  csvRows.push([esc(r.date), esc(days[d.getDay()]), esc(fmtTime(r.start_time)), esc(fmtTime(r.end_time)),
-                    r.work_mins??"", esc(minsToLabel(r.work_mins)), r.expense||0, esc(r.note||"")].join(","));
-                });
-                csvRows.push("");
-                csvRows.push([esc("合計"), esc(`${mg.count}日`), "", "", mg.totalMins, esc(minsToLabel(mg.totalMins)), mg.totalExpense, ""].join(","));
-                const csvContent = "\uFEFF" + csvRows.join("\r\n");
-                const blob = new Blob([csvContent], { type:"text/csv;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a"); a.href=url; a.download=`勤怠_${y}年${mo}月.csv`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                setTimeout(()=>URL.revokeObjectURL(url), 30000);
-              }
-
-              async function handleShare() {
-                const text = buildShareText();
-                try {
-                  if (navigator.share) { await navigator.share({ title:`${y}年${mo}月 勤怠`, text }); return; }
-                } catch(e) {}
-                try { await navigator.clipboard.writeText(text); alert("📋 クリップボードにコピーしました"); }
-                catch(e) {
-                  const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
-                  document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-                  alert("📋 コピーしました");
-                }
-              }
-
-              return (
-                <div key={mk} style={{ marginBottom:28 }}>
-                  <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, padding:"14px 18px", marginBottom:10 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <div>
-                        <span style={{ fontSize:11, color:C.muted }}>{y}年</span>
-                        <span style={{ fontSize:20, fontWeight:800, color:C.accent, marginLeft:6, fontFamily:"monospace" }}>{mo}月</span>
-                        <span style={{ fontSize:12, color:C.muted, marginLeft:8 }}>{mg.count}日</span>
-                      </div>
-                      <div style={{ textAlign:"right" }}>
-                        <div style={{ fontSize:10, color:C.muted, marginBottom:2 }}>合計勤務時間</div>
-                        <div style={{ fontSize:22, fontWeight:800, fontFamily:"monospace", color:C.accent }}>{String(Math.floor(mg.totalMins/60)).padStart(2,"0")}:{String(mg.totalMins%60).padStart(2,"0")}</div>
-                        <div style={{ fontSize:11, color:C.muted }}>{minsToLabel(mg.totalMins)}</div>
-                        {mg.totalExpense>0 && <div style={{ fontSize:11, color:C.accentLight, marginTop:2 }}>立替合計 ¥{mg.totalExpense.toLocaleString()}</div>}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                    <button onClick={handleShare} style={{ flex:1, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 0",
-                      cursor:"pointer", fontSize:12, fontWeight:600, color:C.accent, display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                      <span style={{ fontSize:14 }}>📤</span> 送る</button>
-                    <button onClick={handlePdf} style={{ flex:1, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 0",
-                      cursor:"pointer", fontSize:12, fontWeight:600, color:C.accent, display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                      <span style={{ fontSize:14 }}>📄</span> PDF</button>
-                    <button onClick={handleCsv} style={{ flex:1, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 0",
-                      cursor:"pointer", fontSize:12, fontWeight:600, color:C.accent, display:"flex", alignItems:"center", justifyContent:"center", gap:5 }}>
-                      <span style={{ fontSize:14 }}>📊</span> CSV</button>
-                  </div>
-
-                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    {mg.records.map((r) => {
-                      const dow = new Date(r.date+"T00:00:00").getDay();
-                      const dayColor = WEEKDAY_COLOR[dow] || C.text;
-                      return (
-                        <div key={r.id} style={{ background:C.surface, borderRadius:12, padding:"11px 14px", border:`1px solid ${C.border}` }}>
-                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                            <div style={{ display:"flex", gap:10, alignItems:"center", flexWrap:"wrap", flex:1, minWidth:0 }}>
-                              <span style={{ fontSize:13, fontWeight:700, color:dayColor, flexShrink:0 }}>{formatDate(r.date)}</span>
-                              <span style={{ fontSize:13, color:C.muted, fontFamily:"monospace" }}>{fmtTime(r.start_time)} → {fmtTime(r.end_time)}</span>
-                              <span style={{ fontSize:13, fontWeight:700, color:C.accent, fontFamily:"monospace" }}>{minsToLabel(r.work_mins)}</span>
-                            </div>
-                            <div style={{ display:"flex", gap:6, flexShrink:0, marginLeft:8 }}>
-                              <button onClick={()=>handleEdit(r)} style={{ background:C.surface2, border:`1px solid ${C.border}`, borderRadius:6, padding:"3px 10px", color:C.muted, cursor:"pointer", fontSize:12 }}>編集</button>
-                              <button onClick={()=>handleDelete(r)} style={{ background:"#fdf2f0", border:"1px solid #e8cfc8", borderRadius:6, padding:"3px 10px", color:C.danger, cursor:"pointer", fontSize:12 }}>削除</button>
-                            </div>
-                          </div>
-                          {(r.expense>0 || r.note || (r.photos&&r.photos.length>0)) && (
-                            <div style={{ marginTop:8, paddingTop:8, borderTop:`1px solid ${C.border}` }}>
-                              <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
-                                {r.expense>0 && <span style={{ fontSize:12, color:C.accentLight }}>¥{r.expense.toLocaleString()} 立替</span>}
-                                {r.note && <span style={{ fontSize:12, color:C.muted }}>{r.note}</span>}
-                              </div>
-                              {r.photos && r.photos.length>0 && (
-                                <div style={{ display:"flex", gap:6, marginTop:8, flexWrap:"wrap" }}>
-                                  {r.photos.map((p) => (
-                                    <img key={p.id} src={p.url} onClick={()=>setLightbox(p.url)}
-                                      style={{ width:48, height:48, objectFit:"cover", borderRadius:8, border:`1px solid ${C.border}`, cursor:"pointer" }} />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </main>
-    </div>
-  );
+      const blob = new Blob([html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3e4);
+    }
+    function handleCsv() {
+      const header = ["\u65E5\u4ED8", "\u66DC\u65E5", "\u51FA\u52E4", "\u9000\u52E4", "\u52E4\u52D9\u6642\u9593(\u5206)", "\u52E4\u52D9\u6642\u9593", "\u7ACB\u66FF\u91D1", "\u5099\u8003"];
+      const csvRows = [header.join(",")];
+      const esc = (v) => `"${String(v != null ? v : "").replace(/"/g, '""')}"`;
+      mg.records.forEach((r) => {
+        var _a2;
+        const d = /* @__PURE__ */ new Date(r.date + "T00:00:00");
+        const days = ["\u65E5", "\u6708", "\u706B", "\u6C34", "\u6728", "\u91D1", "\u571F"];
+        csvRows.push([
+          esc(r.date),
+          esc(days[d.getDay()]),
+          esc(fmtTime(r.start_time)),
+          esc(fmtTime(r.end_time)),
+          (_a2 = r.work_mins) != null ? _a2 : "",
+          esc(minsToLabel(r.work_mins)),
+          r.expense || 0,
+          esc(r.note || "")
+        ].join(","));
+      });
+      csvRows.push("");
+      csvRows.push([esc("\u5408\u8A08"), esc(`${mg.count}\u65E5`), "", "", mg.totalMins, esc(minsToLabel(mg.totalMins)), mg.totalExpense, ""].join(","));
+      const csvContent = "\uFEFF" + csvRows.join("\r\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `\u52E4\u6020_${y}\u5E74${mo}\u6708.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 3e4);
+    }
+    async function handleShare() {
+      const text = buildShareText();
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: `${y}\u5E74${mo}\u6708 \u52E4\u6020`, text });
+          return;
+        }
+      } catch (e) {
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        alert("\u{1F4CB} \u30AF\u30EA\u30C3\u30D7\u30DC\u30FC\u30C9\u306B\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F");
+      } catch (e) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        alert("\u{1F4CB} \u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F");
+      }
+    }
+    return /* @__PURE__ */ React.createElement("div", { key: mk, style: { marginBottom: 28 } }, /* @__PURE__ */ React.createElement("div", { style: { background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "14px 18px", marginBottom: 10 } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 11, color: C.muted } }, y, "\u5E74"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 20, fontWeight: 800, color: C.accent, marginLeft: 6, fontFamily: "monospace" } }, mo, "\u6708"), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: C.muted, marginLeft: 8 } }, mg.count, "\u65E5")), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "right" } }, /* @__PURE__ */ React.createElement("div", { style: { fontSize: 10, color: C.muted, marginBottom: 2 } }, "\u5408\u8A08\u52E4\u52D9\u6642\u9593"), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 22, fontWeight: 800, fontFamily: "monospace", color: C.accent } }, String(Math.floor(mg.totalMins / 60)).padStart(2, "0"), ":", String(mg.totalMins % 60).padStart(2, "0")), /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: C.muted } }, minsToLabel(mg.totalMins)), mg.totalExpense > 0 && /* @__PURE__ */ React.createElement("div", { style: { fontSize: 11, color: C.accentLight, marginTop: 2 } }, "\u7ACB\u66FF\u5408\u8A08 \xA5", mg.totalExpense.toLocaleString())))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 10 } }, /* @__PURE__ */ React.createElement("button", { onClick: handleShare, style: {
+      flex: 1,
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderRadius: 10,
+      padding: "10px 0",
+      cursor: "pointer",
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.accent,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5
+    } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14 } }, "\u{1F4E4}"), " \u9001\u308B"), /* @__PURE__ */ React.createElement("button", { onClick: handlePdf, style: {
+      flex: 1,
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderRadius: 10,
+      padding: "10px 0",
+      cursor: "pointer",
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.accent,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5
+    } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14 } }, "\u{1F4C4}"), " PDF"), /* @__PURE__ */ React.createElement("button", { onClick: handleCsv, style: {
+      flex: 1,
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderRadius: 10,
+      padding: "10px 0",
+      cursor: "pointer",
+      fontSize: 12,
+      fontWeight: 600,
+      color: C.accent,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5
+    } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 14 } }, "\u{1F4CA}"), " CSV")), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 6 } }, mg.records.map((r) => {
+      const dow = (/* @__PURE__ */ new Date(r.date + "T00:00:00")).getDay();
+      const dayColor = WEEKDAY_COLOR[dow] || C.text;
+      return /* @__PURE__ */ React.createElement("div", { key: r.id, style: { background: C.surface, borderRadius: 12, padding: "11px 14px", border: `1px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, fontWeight: 700, color: dayColor, flexShrink: 0 } }, formatDate(r.date)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, color: C.muted, fontFamily: "monospace" } }, fmtTime(r.start_time), " \u2192 ", fmtTime(r.end_time)), /* @__PURE__ */ React.createElement("span", { style: { fontSize: 13, fontWeight: 700, color: C.accent, fontFamily: "monospace" } }, minsToLabel(r.work_mins))), /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, flexShrink: 0, marginLeft: 8 } }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleEdit(r), style: { background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 10px", color: C.muted, cursor: "pointer", fontSize: 12 } }, "\u7DE8\u96C6"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleDelete(r), style: { background: "#fdf2f0", border: "1px solid #e8cfc8", borderRadius: 6, padding: "3px 10px", color: C.danger, cursor: "pointer", fontSize: 12 } }, "\u524A\u9664"))), (r.expense > 0 || r.note || r.photos && r.photos.length > 0) && /* @__PURE__ */ React.createElement("div", { style: { marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` } }, /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap" } }, r.expense > 0 && /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: C.accentLight } }, "\xA5", r.expense.toLocaleString(), " \u7ACB\u66FF"), r.note && /* @__PURE__ */ React.createElement("span", { style: { fontSize: 12, color: C.muted } }, r.note)), r.photos && r.photos.length > 0 && /* @__PURE__ */ React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" } }, r.photos.map((p) => /* @__PURE__ */ React.createElement(
+        "img",
+        {
+          key: p.id,
+          src: p.url,
+          onClick: () => setLightbox(p.url),
+          style: { width: 48, height: 48, objectFit: "cover", borderRadius: 8, border: `1px solid ${C.border}`, cursor: "pointer" }
+        }
+      )))));
+    })));
+  }))));
 }
-
-/* ═══════════════════════════════════════════════════════
-   ルート
-═══════════════════════════════════════════════════════ */
 function Root() {
-  const [config, setConfig] = useState(null); // { url, key }
+  const [config, setConfig] = useState(null);
   const [supabase, setSupabase] = useState(null);
-  const [session, setSession] = useState(undefined); // undefined=読込中, null=未ログイン
-
+  const [session, setSession] = useState(void 0);
   useEffect(() => {
     const url = localStorage.getItem("sb_url");
     const key = localStorage.getItem("sb_key");
     if (url && key) setConfig({ url, key });
     else setConfig(false);
   }, []);
-
   useEffect(() => {
     if (!config) return;
     const client = window.supabase.createClient(config.url, config.key);
@@ -742,17 +701,13 @@ function Root() {
     const { data: sub } = client.auth.onAuthStateChange((_event, sess) => setSession(sess));
     return () => sub.subscription.unsubscribe();
   }, [config]);
-
-  if (config === null) return null; // 判定中
-  if (config === false) return <SetupScreen onSaved={(url,key)=>setConfig({url,key})} />;
-  if (!supabase || session === undefined) return null; // 読込中
-
-  if (!session) return <AuthScreen supabase={supabase} />;
-
-  return <MainApp supabase={supabase} session={session} onLogout={()=>supabase.auth.signOut()} />;
+  if (config === null) return null;
+  if (config === false) return /* @__PURE__ */ React.createElement(SetupScreen, { onSaved: (url, key) => setConfig({ url, key }) });
+  if (!supabase || session === void 0) return null;
+  if (!session) return /* @__PURE__ */ React.createElement(AuthScreen, { supabase });
+  return /* @__PURE__ */ React.createElement(MainApp, { supabase, session, onLogout: () => supabase.auth.signOut() });
 }
-
-ReactDOM.createRoot(document.getElementById("root")).render(<Root />);
+ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(Root, null));
 </script>
 </body>
 </html>
