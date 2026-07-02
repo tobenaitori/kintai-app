@@ -111,13 +111,16 @@ function SetupScreen({ onSaved }) {
       setErr("\u4E21\u65B9\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044");
       return;
     }
-    if (!url.startsWith("https://") || !url.includes(".supabase.co")) {
+    let cleanUrl = url.trim();
+    const match = cleanUrl.match(/^https:\/\/[a-zA-Z0-9-]+\.supabase\.co/);
+    if (!match) {
       setErr("URL\u306E\u5F62\u5F0F\u304C\u6B63\u3057\u304F\u306A\u3044\u3088\u3046\u3067\u3059\uFF08\u4F8B: https://xxxx.supabase.co\uFF09");
       return;
     }
-    localStorage.setItem("sb_url", url.trim());
+    cleanUrl = match[0];
+    localStorage.setItem("sb_url", cleanUrl);
     localStorage.setItem("sb_key", key.trim());
-    onSaved(url.trim(), key.trim());
+    onSaved(cleanUrl, key.trim());
   }
   const inputStyle = {
     width: "100%",
@@ -244,7 +247,20 @@ function AuthScreen({ supabase }) {
     setMode("login");
     setErr("");
     setMsg("");
-  }, style: { color: C.accent, cursor: "pointer", fontWeight: 600 } }, "\u30ED\u30B0\u30A4\u30F3")))));
+  }, style: { color: C.accent, cursor: "pointer", fontWeight: 600 } }, "\u30ED\u30B0\u30A4\u30F3"))), /* @__PURE__ */ React.createElement("div", { style: { textAlign: "center", marginTop: 18, paddingTop: 14, borderTop: `1px solid ${C.border}` } }, /* @__PURE__ */ React.createElement(
+    "span",
+    {
+      onClick: () => {
+        if (confirm("Supabase\u306E\u63A5\u7D9A\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8\u3057\u307E\u3059\u304B\uFF1F\n\uFF08URL\u30FB\u30AD\u30FC\u306E\u5165\u529B\u304B\u3089\u3084\u308A\u76F4\u3057\u306B\u306A\u308A\u307E\u3059\uFF09")) {
+          localStorage.removeItem("sb_url");
+          localStorage.removeItem("sb_key");
+          window.location.reload();
+        }
+      },
+      style: { fontSize: 11, color: C.disabledText, cursor: "pointer", textDecoration: "underline" }
+    },
+    "\u63A5\u7D9A\u8A2D\u5B9A\u3092\u30EA\u30BB\u30C3\u30C8\u3059\u308B"
+  ))));
 }
 function TimePicker({ label, value, onChange }) {
   const h = value ? parseInt(value.split(":")[0]) : "";
